@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kanji Reading Typing Practice</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#202735;font-family:Arial,"Yu Gothic","Noto Sans JP",sans-serif}
+main{max-width:760px;margin:auto;padding:22px}.head{display:flex;justify-content:space-between;align-items:end;gap:12px}
+h1{font-size:clamp(25px,5vw,38px);margin:0}.sub{color:#6e7887;margin:7px 0 0}.count{font-weight:bold;color:#647083;white-space:nowrap}
+.track{height:8px;background:#dfe5ed;border-radius:8px;overflow:hidden;margin:18px 0 28px}.fill{height:100%;background:#315fcb;transition:.3s}
+.panel{background:white;border:1px solid #dce3ec;border-radius:24px;padding:clamp(24px,6vw,45px);box-shadow:0 8px 28px #0000000a;text-align:center}
+.label{text-transform:uppercase;letter-spacing:.09em;color:#8993a0;font-size:12px;font-weight:bold}.word{font-size:clamp(48px,10vw,76px);font-weight:700;margin:17px 0 10px;line-height:1.25}
+.meaning{font-size:clamp(18px,4vw,25px);color:#566273;margin-bottom:32px}.instruction{text-align:left;color:#657183;font-size:14px;margin:0 0 8px}
+input{width:100%;font:inherit;font-size:24px;padding:15px 17px;border:2px solid #bac6d6;border-radius:13px;outline:none}input:focus{border-color:#315fcb}
+input.good{border-color:#27864a;background:#effaf2}input.bad{border-color:#c84646;background:#fff1f1}
+.actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}.actions button{flex:1;min-width:120px}
+button{font:inherit;padding:11px 16px;border:1px solid #d2dbe7;border-radius:11px;background:white;cursor:pointer}button.primary{background:#294a91;color:#fff;border-color:#294a91}button:disabled{opacity:.42;cursor:not-allowed}
+.feedback{min-height:27px;margin-top:19px;font-size:18px;font-weight:bold}.ok{color:#278448}.no{color:#bd3939}.accepted{min-height:25px;margin-top:7px;color:#667282;font-size:15px}.score{margin-top:17px;color:#687485}
+.end{display:none}.end h2{font-size:35px;margin-top:0}.final{font-size:52px;font-weight:bold;margin:18px}.percent{font-size:24px;margin-bottom:25px}
+.endActions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+@media(max-width:520px){main{padding:13px}.head{align-items:flex-start;flex-direction:column}.panel{padding:25px 17px}.actions button{width:100%;flex-basis:100%}}
+</style></head><body><main>
+<div class="head"><div><h1>Kanji Reading Practice</h1><p class="sub">Type the reading in hiragana.</p></div><div class="count" id="count"></div></div>
+<div class="track"><div class="fill" id="fill"></div></div>
+<section class="panel" id="quiz">
+<div class="label">Japanese</div><div class="word" id="word"></div><div class="meaning" id="meaning"></div>
+<div class="instruction">Type the whole reading or the reading of the kanji part.</div>
+<input id="input" lang="ja" inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="Type in hiragana">
+<div class="actions"><button class="primary" id="check" onclick="checkAnswer()">Check</button><button id="show" onclick="showAnswer()">Show Answer</button><button id="next" onclick="nextQuestion()" disabled>Next →</button></div>
+<div class="feedback" id="feedback"></div><div class="accepted" id="accepted"></div><div class="score" id="score"></div>
+</section>
+<section class="panel end" id="end"><h2>Finished!</h2><div class="final" id="final"></div><div class="percent" id="percent"></div>
+<div class="endActions"><button class="primary" onclick="retry(false)">Try Again</button><button onclick="retry(true)">🔀 Shuffle & Retry</button></div></section>
+</main>
+<script>
+const original=[{"word": "応募する", "meaning": "to apply", "answers": ["おうぼ", "おうぼする"]}, {"word": "対応する", "meaning": "to handle / deal with", "answers": ["たいおう", "たいおうする"]}, {"word": "書類", "meaning": "documents / paperwork", "answers": ["しょるい"]}, {"word": "履歴書", "meaning": "résumé / CV", "answers": ["りれきしょ"]}, {"word": "担当する", "meaning": "to be in charge of", "answers": ["たんとう", "たんとうする"]}, {"word": "担当者", "meaning": "person in charge", "answers": ["たんとうしゃ"]}, {"word": "手当", "meaning": "allowance", "answers": ["てあて"]}, {"word": "給料", "meaning": "salary / pay", "answers": ["きゅうりょう"]}, {"word": "時給", "meaning": "hourly wage", "answers": ["じきゅう"]}, {"word": "勤務する", "meaning": "to work / be on duty", "answers": ["きんむ", "きんむする"]}, {"word": "出勤する", "meaning": "to go to work / report for work", "answers": ["しゅっきん", "しゅっきんする"]}, {"word": "通う", "meaning": "to commute / go regularly", "answers": ["かよ", "かよう"]}, {"word": "通勤する", "meaning": "to commute to work", "answers": ["つうきん", "つうきんする"]}, {"word": "通じる", "meaning": "to be understood", "answers": ["つう", "つうじる"]}, {"word": "代わる", "meaning": "to take someone's place / substitute", "answers": ["か", "かわる"]}, {"word": "交代する", "meaning": "to switch / take turns", "answers": ["こうたい", "こうたいする"]}, {"word": "代わり", "meaning": "substitute / replacement", "answers": ["か", "かわり"]}, {"word": "店員", "meaning": "store clerk / staff member", "answers": ["てんいん"]}, {"word": "従業員", "meaning": "employee", "answers": ["じゅうぎょういん"]}, {"word": "お客", "meaning": "customer / guest", "answers": ["きゃく", "おきゃく"]}, {"word": "接客", "meaning": "customer service", "answers": ["せっきゃく"]}, {"word": "売る", "meaning": "to sell", "answers": ["う", "うる"]}, {"word": "販売する", "meaning": "to sell / offer for sale", "answers": ["はんばい", "はんばいする"]}, {"word": "売り上げ", "meaning": "sales / revenue", "answers": ["う", "うりあげ"]}, {"word": "迎える", "meaning": "to welcome / receive", "answers": ["むか", "むかえる"]}, {"word": "歓迎する", "meaning": "to welcome", "answers": ["かんげい", "かんげいする"]}, {"word": "管理する", "meaning": "to manage", "answers": ["かんり", "かんりする"]}, {"word": "調理する", "meaning": "to cook / prepare food", "answers": ["ちょうり", "ちょうりする"]}, {"word": "清掃する", "meaning": "to clean", "answers": ["せいそう", "せいそうする"]}, {"word": "掃除する", "meaning": "to clean", "answers": ["そうじ", "そうじする"]}, {"word": "付ける", "meaning": "to add / attach", "answers": ["つ", "つける"]}, {"word": "付く", "meaning": "to come with / be included", "answers": ["つ", "つく"]}, {"word": "片付ける", "meaning": "to clear away / tidy up", "answers": ["かたづ", "かたづける"]}, {"word": "案内する", "meaning": "to show / guide", "answers": ["あんない", "あんないする"]}, {"word": "注文する", "meaning": "to order", "answers": ["ちゅうもん", "ちゅうもんする"]}, {"word": "注意する", "meaning": "to be careful / pay attention", "answers": ["ちゅうい", "ちゅういする"]}, {"word": "繰り返す", "meaning": "to repeat", "answers": ["くかえ", "くりかえす"]}, {"word": "返す", "meaning": "to return / give back", "answers": ["かえ", "かえす"]}, {"word": "返し", "meaning": "change / amount returned", "answers": ["かえ", "かえし"]}, {"word": "商品", "meaning": "product / merchandise", "answers": ["しょうひん"]}, {"word": "品", "meaning": "item / goods", "answers": ["しな"]}, {"word": "会計", "meaning": "bill / checkout / payment", "answers": ["かいけい"]}, {"word": "料金", "meaning": "fee / charge / price", "answers": ["りょうきん"]}, {"word": "現金", "meaning": "cash", "answers": ["げんきん"]}];let deck=[...original],index=0,score=0,resolved=false;
+const $=id=>document.getElementById(id);
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function normalize(s){return s.trim().replace(/\s+/g,'').replace(/　/g,'')}
+function render(){const q=deck[index];resolved=false;$('word').textContent=q.word;$('meaning').textContent=q.meaning;$('input').value='';$('input').disabled=false;$('input').className='';
+$('check').disabled=false;$('show').disabled=false;$('next').disabled=true;$('feedback').textContent='';$('feedback').className='feedback';$('accepted').textContent='';
+$('count').textContent=`Question ${index+1} / ${deck.length}`;$('fill').style.width=(index/deck.length*100)+'%';$('score').textContent=`Score: ${score} / ${index}`;setTimeout(()=>$('input').focus(),50)}
+function resolve(correct,shown=false){resolved=true;const q=deck[index];$('input').disabled=true;$('check').disabled=true;$('show').disabled=true;$('next').disabled=false;
+if(correct){$('input').className='good';$('feedback').textContent='✓ Correct!';$('feedback').className='feedback ok';score++}
+else{$('input').className='bad';$('feedback').textContent=shown?'Answer shown':'✗ Not quite.';$('feedback').className='feedback no'}
+$('accepted').textContent='Accepted: '+q.answers.join(' / ');$('score').textContent=`Score: ${score} / ${index+1}`;$('next').focus()}
+function checkAnswer(){if(resolved)return;const v=normalize($('input').value);if(!v){$('feedback').textContent='Please type an answer.';$('feedback').className='feedback no';return}
+const ok=deck[index].answers.some(a=>normalize(a)===v);resolve(ok,false)}
+function showAnswer(){if(resolved)return;$('input').value=deck[index].answers[deck[index].answers.length-1];resolve(false,true)}
+function nextQuestion(){if(!resolved)return;if(index<deck.length-1){index++;render()}else finish()}
+function finish(){$('quiz').style.display='none';$('end').style.display='block';$('fill').style.width='100%';$('count').textContent='Complete';
+$('final').textContent=`${score} / ${deck.length}`;$('percent').textContent=`${Math.round(score/deck.length*100)}% correct`}
+function retry(doShuffle){deck=doShuffle?shuffle(original):[...original];index=0;score=0;$('end').style.display='none';$('quiz').style.display='block';render()}
+$('input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();resolved?nextQuestion():checkAnswer()}});
+render();
+</script></body></html>
