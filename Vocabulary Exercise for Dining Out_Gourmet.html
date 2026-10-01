@@ -1,0 +1,38 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Restaurant Vocabulary Typing Practice</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#202735;font-family:Arial,"Yu Gothic","Noto Sans JP",sans-serif}
+main{max-width:760px;margin:auto;padding:24px}.header{display:flex;justify-content:space-between;gap:12px;align-items:center}.progressText{font-weight:bold;color:#667184}
+.track{height:8px;background:#dfe5ee;border-radius:9px;overflow:hidden;margin:15px 0 28px}.fill{height:100%;background:#315fcb;transition:.3s}
+.panel{background:#fff;border:1px solid #dce3ec;border-radius:24px;padding:clamp(22px,5vw,42px);box-shadow:0 9px 30px #0000000a}
+.label{font-size:13px;font-weight:bold;color:#7b8796;text-transform:uppercase;letter-spacing:.08em}.choices{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0 32px}
+.choice{padding:9px 14px;background:#f2f5f9;border:1px solid #d9e0e9;border-radius:10px;font-weight:bold;user-select:none}
+.note{font-size:13px;color:#8a94a1;margin-top:-23px;margin-bottom:28px}.sentence{font-size:clamp(21px,4vw,30px);line-height:1.8;font-weight:600;margin:20px 0 28px}
+input{width:100%;font:inherit;font-size:23px;padding:15px 17px;border:2px solid #b9c5d5;border-radius:13px;outline:none}input:focus{border-color:#315fcb}.correct{border-color:#2a914d;background:#effaf2}.wrong{border-color:#c84646;background:#fff1f1}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}button{font:inherit;padding:11px 17px;border-radius:11px;border:1px solid #d3dce7;background:white;cursor:pointer}button.primary{background:#294a91;color:white;border-color:#294a91}button:disabled{opacity:.4;cursor:not-allowed}
+.feedback{min-height:32px;margin-top:18px;font-weight:bold;font-size:18px}.good{color:#278448}.bad{color:#bd3939}.score{margin-top:18px;color:#697485}
+.end{text-align:center}.end h2{font-size:35px}.big{font-size:52px;font-weight:bold;margin:20px}.hidden{display:none}
+@media(max-width:520px){main{padding:13px}.header{align-items:flex-start;flex-direction:column}.panel{padding:22px 17px}}
+</style></head><body><main>
+<div class="header"><h1>Vocabulary Typing Practice</h1><div class="progressText" id="progress"></div></div><div class="track"><div class="fill" id="fill"></div></div>
+<div class="panel" id="quiz">
+<div class="label">Word Bank</div><div class="choices" id="choices"></div><div class="note">Look at the choices, then type your answer below. The choices cannot be clicked.</div>
+<div class="label">Question</div><div class="sentence" id="sentence"></div>
+<input id="answer" autocomplete="off" autocapitalize="off" placeholder="Type your answer here">
+<div class="actions"><button class="primary" id="check" onclick="check()">Check</button><button id="next" onclick="next()" disabled>Next →</button></div>
+<div class="feedback" id="feedback"></div><div class="score" id="score"></div></div>
+<div class="panel end hidden" id="end"><h2>Finished!</h2><div class="big" id="final"></div><p id="message"></p><button class="primary" onclick="restart()">↻ Practice Again</button></div>
+</main><script>
+const source=[{"sentence": "料理ができないので、いつも（　　　　　）します。", "answer": "外食", "choices": ["放題", "営業", "食材", "外食", "食事"]}, {"sentence": "父はいつもお酒を飲みながら、（　　　　　）します。", "answer": "食事", "choices": ["放題", "営業", "食材", "外食", "食事"]}, {"sentence": "冷蔵庫（れいぞうこ）には、何も（　　　　　）がありません。", "answer": "食材", "choices": ["放題", "営業", "食材", "外食", "食事"]}, {"sentence": "この店は、5時から（　　　　　）しています。", "answer": "営業", "choices": ["放題", "営業", "食材", "外食", "食事"]}, {"sentence": "お酒を飲む人は、飲み（　　　　　）を選ぶとお得です。", "answer": "放題", "choices": ["放題", "営業", "食材", "外食", "食事"]}, {"sentence": "（　　　　　）いるので、お店に入れません。", "answer": "混んで", "choices": ["味わう", "空く", "混ぜる", "足りる", "混む"]}, {"sentence": "この料理は、よく（　　　　　）て、食べてください。", "answer": "混ぜ", "choices": ["味わう", "空く", "混ぜる", "足りる", "混む"]}, {"sentence": "このお店は、音楽を聞きながら、料理を（　　　　　）ことができます。", "answer": "味わう", "choices": ["味わう", "空く", "混ぜる", "足りる", "混む"]}, {"sentence": "ランチのときは、席が（　　　　　）いません。", "answer": "空いて", "choices": ["味わう", "空く", "混ぜる", "足りる", "混む"]}, {"sentence": "料理が（　　　　　）いので、もっと注文しましょう。", "answer": "足りな", "choices": ["味わう", "空く", "混ぜる", "足りる", "混む"]}, {"sentence": "（　　　　　）の人がよく行く店を教えてください。", "answer": "地元", "choices": ["雰囲気", "地元", "お得", "定番", "提供"]}, {"sentence": "LINEに登録すると、（　　　　　）なサービスがあります。", "answer": "お得", "choices": ["雰囲気", "地元", "お得", "定番", "提供"]}, {"sentence": "店内は、明るい（　　　　　）です。", "answer": "雰囲気", "choices": ["雰囲気", "地元", "お得", "定番", "提供"]}, {"sentence": "この店の（　　　　　）は、パンケーキです。", "answer": "定番", "choices": ["雰囲気", "地元", "お得", "定番", "提供"]}, {"sentence": "この旅館は、すばらしい料理とサービスを（　　　　　）しています。", "answer": "提供", "choices": ["雰囲気", "地元", "お得", "定番", "提供"]}, {"sentence": "この（　　　　　）には、若者向けの飲食店が多くあります。", "answer": "地域", "choices": ["満席", "ボリューム満点", "不満", "向け", "地域"]}, {"sentence": "この地域には、若者（　　　　　）の飲食店が多くあります。", "answer": "向け", "choices": ["満席", "ボリューム満点", "不満", "向け", "地域"]}, {"sentence": "太一商店では、（　　　　　）のラーメンが食べられます。", "answer": "ボリューム満点", "choices": ["満席", "ボリューム満点", "不満", "向け", "地域"]}, {"sentence": "（　　　　　）があれば、お店のアンケートに答えます。", "answer": "不満", "choices": ["満席", "ボリューム満点", "不満", "向け", "地域"]}, {"sentence": "ランチのとき、ジョイフルはいつも、（　　　　　）です。", "answer": "満席", "choices": ["満席", "ボリューム満点", "不満", "向け", "地域"]}];let deck=[],i=0,correct=0,attempted=false;
+const $=x=>document.getElementById(x);function shuffle(a){a=[...a];for(let n=a.length-1;n>0;n--){let j=Math.floor(Math.random()*(n+1));[a[n],a[j]]=[a[j],a[n]]}return a}
+function start(){deck=shuffle(source).map(q=>({...q,choices:shuffle(q.choices)}));i=0;correct=0;render()}
+function render(){let q=deck[i];attempted=false;$('sentence').textContent=q.sentence;$('choices').innerHTML='';q.choices.forEach(w=>{let s=document.createElement('span');s.className='choice';s.textContent=w;$('choices').appendChild(s)});
+$('answer').value='';$('answer').className='';$('answer').disabled=false;$('check').disabled=false;$('next').disabled=true;$('feedback').textContent='';$('feedback').className='feedback';$('progress').textContent=`Question ${i+1} / ${deck.length}`;$('fill').style.width=((i)/deck.length*100)+'%';$('score').textContent=`Score: ${correct} / ${i}`;setTimeout(()=>$('answer').focus(),50)}
+function norm(s){return s.trim().replace(/\s+/g,'')}
+function check(){if(attempted)return;let val=norm($('answer').value),ans=norm(deck[i].answer);if(!val){$('feedback').textContent='Please type an answer.';$('feedback').className='feedback bad';return}
+attempted=true;if(val===ans){correct++;$('answer').className='correct';$('feedback').textContent='✓ Correct!';$('feedback').className='feedback good'}else{$('answer').className='wrong';$('feedback').textContent=`✗ Correct answer: ${deck[i].answer}`;$('feedback').className='feedback bad'}
+$('answer').disabled=true;$('check').disabled=true;$('next').disabled=false;$('score').textContent=`Score: ${correct} / ${i+1}`;$('next').focus()}
+function next(){if(i<deck.length-1){i++;render()}else{finish()}}
+function finish(){$('quiz').classList.add('hidden');$('end').classList.remove('hidden');$('progress').textContent='Complete';$('fill').style.width='100%';let pct=Math.round(correct/deck.length*100);$('final').textContent=`${correct} / ${deck.length}`;$('message').textContent=`Score: ${pct}%`;}
+function restart(){$('end').classList.add('hidden');$('quiz').classList.remove('hidden');start()}
+$('answer').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();attempted?next():check()}});start();
+</script></body></html>
