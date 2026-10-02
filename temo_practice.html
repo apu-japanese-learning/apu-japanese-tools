@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>～ても Practice</title>
+<style>
+:root{--bg:#f5f7fb;--text:#172033;--muted:#667085;--line:#d8deea;--blue:#eef4ff;--green:#e9f8ef;--greenline:#70b986;--red:#fff1f1;--redline:#df9292}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
+.wrap{max-width:620px;margin:auto;padding:16px}header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+h1{font-size:24px;margin:0}.sub{font-size:14px;color:var(--muted);margin-top:4px}button{font:inherit;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;cursor:pointer}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 4px 18px rgba(20,30,50,.06)}
+.home-title{text-align:center;font-size:28px;font-weight:900;margin:15px 0 6px}.home-sub{text-align:center;color:var(--muted);margin-bottom:25px}
+.part{display:block;width:100%;text-align:left;padding:20px;border:2px solid var(--line);border-radius:15px;margin:12px 0;background:#fff}
+.part strong{display:block;font-size:21px;margin-bottom:5px}.part span{color:var(--muted)}.part:hover{border-color:#8ca3cf;background:#fafcff}
+.progress{font-weight:800;margin-bottom:16px}.label{font-size:14px;font-weight:800;color:var(--muted);margin:18px 0 7px}
+.question{font-size:25px;line-height:1.6;margin:10px 0}.keywords{background:var(--blue);border-radius:14px;padding:18px;text-align:center;font-size:23px;font-weight:850}.plus{padding:0 8px;color:var(--muted)} ruby{ruby-position:over} rt{font-size:.55em;color:var(--muted);font-weight:600}
+input[type=text]{width:100%;font:inherit;font-size:22px;padding:12px 14px;border:2px solid var(--line);border-radius:12px}
+.choice{display:block;border:2px solid var(--line);border-radius:12px;padding:13px 14px;margin:10px 0;font-size:18px;line-height:1.5}.choice input{margin-right:10px;transform:scale(1.2)}
+.actions{display:flex;gap:10px;margin-top:20px}.primary{background:#172033;color:#fff;border-color:#172033;flex:1}
+.feedback{display:none;margin-top:20px;padding:18px;border-radius:14px;line-height:1.65}.show{display:block}.good{background:var(--green);border:2px solid var(--greenline)}.wrong{background:var(--red);border:2px solid var(--redline)}
+.status{font-size:26px;font-weight:900}.answer{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px;margin-top:12px}
+.nav{display:flex;gap:10px;margin-top:13px}.nav button{flex:1}.topnav{margin-bottom:12px}.hidden{display:none}
+@media(max-width:480px){.wrap{padding:10px}.card{padding:18px}.question{font-size:22px}.keywords{font-size:20px}.choice{font-size:17px}}
+</style></head>
+<body><div class="wrap">
+<header><div><h1>～ても Practice</h1><div class="sub">Form & Meaning</div></div><button id="full">⛶ Fullscreen</button></header>
+<section id="home" class="card">
+<div class="home-title">～ても Practice</div><div class="home-sub"><ruby>練習<rt>れんしゅう</rt></ruby>を選んでください。</div>
+<button class="part" onclick="startPart(1)"><strong>Part 1　Form</strong><span>肯定・否定の「～ても」の形を作りましょう。20 Questions</span></button>
+<button class="part" onclick="startPart(2)"><strong>Part 2　Meaning</strong><span>Keywordsを見て、「～ても」の意味になる2文を選びましょう。20 Questions</span></button>
+</section>
+<section id="practice" class="hidden">
+<button class="topnav" onclick="goHome()">← Top</button>
+<div class="card"><div id="progress" class="progress"></div><div id="content"></div>
+<div class="actions"><button id="check" class="primary">Check</button><button id="reset">Reset</button></div><div id="feedback" class="feedback"></div></div>
+<div class="nav"><button id="prev">← Previous</button><button id="next">Next →</button></div>
+</section></div>
+<script>
+const formQs=[
+["食べる","食べても","食べなくても"],["行く","行っても","行かなくても"],["飲む","飲んでも","飲まなくても"],["話す","話しても","話さなくても"],["読む","読んでも","読まなくても"],
+["書く","書いても","書かなくても"],["買う","買っても","買わなくても"],["待つ","待っても","待たなくても"],["<ruby>勉強<rt>べんきょう</rt></ruby>する","勉強しても","勉強しなくても"],["来る","来ても","来なくても"],
+["高い","高くても","高くなくても"],["<ruby>忙<rt>いそが</rt></ruby>しい","忙しくても","忙しくなくても"],["<ruby>難<rt>むずか</rt></ruby>しい","難しくても","難しくなくても"],["おもしろい","おもしろくても","おもしろくなくても"],["いい","よくても","よくなくても"],
+["元気","元気でも","元気じゃなくても"],["静か","静かでも","静かじゃなくても"],["<ruby>便利<rt>べんり</rt></ruby>","便利でも","便利じゃなくても"],["学生","学生でも","学生じゃなくても"],["休み","休みでも","休みじゃなくても"]
+].map(x=>({base:x[0],answers:[x[1],x[2]]}));
+
+const meaningQs=[
+["たくさん食べる","太る",["たくさん食べても、太ります。","たくさん食べても、太りません。","たくさん食べなくても、太ります。","たくさん食べなくても、太りません。"],[1,2]],
+["たくさん<ruby>勉強<rt>べんきょう</rt></ruby>する","わかる",["たくさん勉強しても、わかります。","たくさん勉強しても、わかりません。","たくさん勉強しなくても、わかります。","たくさん勉強しなくても、わかりません。"],[1,2]],
+["<ruby>値段<rt>ねだん</rt></ruby>が高い","買う",["<ruby>値段<rt>ねだん</rt></ruby>が高くても、買います。","<ruby>値段<rt>ねだん</rt></ruby>が高くても、買いません。","<ruby>値段<rt>ねだん</rt></ruby>が高くなくても、買います。","<ruby>値段<rt>ねだん</rt></ruby>が高くなくても、買いません。"],[0,3]],
+["天気がいい","出かける",["天気がよくても、出かけます。","天気がよくても、出かけません。","天気がよくなくても、出かけます。","天気がよくなくても、出かけません。"],[1,2]],
+["時間がある","<ruby>料理<rt>りょうり</rt></ruby>する",["時間があっても、<ruby>料理<rt>りょうり</rt></ruby>します。","時間があっても、<ruby>料理<rt>りょうり</rt></ruby>しません。","時間がなくても、<ruby>料理<rt>りょうり</rt></ruby>します。","時間がなくても、<ruby>料理<rt>りょうり</rt></ruby>しません。"],[1,2]],
+["たくさん寝る","元気",["たくさん寝ても、元気です。","たくさん寝ても、元気じゃありません。","たくさん寝なくても、元気です。","たくさん寝なくても、元気じゃありません。"],[1,2]],
+["毎日<ruby>練習<rt>れんしゅう</rt></ruby>する","上手になる",["毎日<ruby>練習<rt>れんしゅう</rt></ruby>しても、上手になります。","毎日<ruby>練習<rt>れんしゅう</rt></ruby>しても、上手になりません。","毎日<ruby>練習<rt>れんしゅう</rt></ruby>しなくても、上手になります。","毎日<ruby>練習<rt>れんしゅう</rt></ruby>しなくても、上手になりません。"],[1,2]],
+["<ruby>薬<rt>くすり</rt></ruby>を飲む","よくなる",["<ruby>薬<rt>くすり</rt></ruby>を飲んでも、よくなります。","<ruby>薬<rt>くすり</rt></ruby>を飲んでも、よくなりません。","<ruby>薬<rt>くすり</rt></ruby>を飲まなくても、よくなります。","<ruby>薬<rt>くすり</rt></ruby>を飲まなくても、よくなりません。"],[1,2]],
+["早く起きる","学校に間に合う",["早く起きても、学校に間に合います。","早く起きても、学校に間に合いません。","早く起きなくても、学校に間に合います。","早く起きなくても、学校に間に合いません。"],[1,2]],
+["たくさん<ruby>働<rt>はたら</rt></ruby>く","お金がある",["たくさん働いても、お金があります。","たくさん働いても、お金がありません。","たくさん働かなくても、お金があります。","たくさん働かなくても、お金がありません。"],[1,2]],
+["<ruby>料理<rt>りょうり</rt></ruby>が<ruby>辛<rt>から</rt></ruby>い","食べる",["<ruby>料理<rt>りょうり</rt></ruby>が辛くても、食べます。","<ruby>料理<rt>りょうり</rt></ruby>が辛くても、食べません。","<ruby>料理<rt>りょうり</rt></ruby>が辛くなくても、食べます。","<ruby>料理<rt>りょうり</rt></ruby>が辛くなくても、食べません。"],[0,3]],
+["部屋が<ruby>広<rt>ひろ</rt></ruby>い","住む",["部屋が広くても、住みます。","部屋が広くても、住みません。","部屋が広くなくても、住みます。","部屋が広くなくても、住みません。"],[1,2]],
+["<ruby>駅<rt>えき</rt></ruby>から近い","住む",["<ruby>駅<rt>えき</rt></ruby>から近くても、住みます。","<ruby>駅<rt>えき</rt></ruby>から近くても、住みません。","<ruby>駅<rt>えき</rt></ruby>から近くなくても、住みます。","<ruby>駅<rt>えき</rt></ruby>から近くなくても、住みません。"],[1,2]],
+["仕事が<ruby>忙<rt>いそが</rt></ruby>しい","<ruby>旅行<rt>りょこう</rt></ruby>する",["仕事が忙しくても、<ruby>旅行<rt>りょこう</rt></ruby>します。","仕事が忙しくても、<ruby>旅行<rt>りょこう</rt></ruby>しません。","仕事が忙しくなくても、<ruby>旅行<rt>りょこう</rt></ruby>します。","仕事が忙しくなくても、<ruby>旅行<rt>りょこう</rt></ruby>しません。"],[0,3]],
+["<ruby>問題<rt>もんだい</rt></ruby>が<ruby>簡単<rt>かんたん</rt></ruby>","わかる",["<ruby>問題<rt>もんだい</rt></ruby>が<ruby>簡単<rt>かんたん</rt></ruby>でも、わかります。","<ruby>問題<rt>もんだい</rt></ruby>が<ruby>簡単<rt>かんたん</rt></ruby>でも、わかりません。","<ruby>問題<rt>もんだい</rt></ruby>が<ruby>簡単<rt>かんたん</rt></ruby>じゃなくても、わかります。","<ruby>問題<rt>もんだい</rt></ruby>が<ruby>簡単<rt>かんたん</rt></ruby>じゃなくても、わかりません。"],[1,2]],
+["町が<ruby>便利<rt>べんり</rt></ruby>","住む",["町が<ruby>便利<rt>べんり</rt></ruby>でも、住みます。","町が<ruby>便利<rt>べんり</rt></ruby>でも、住みません。","町が<ruby>便利<rt>べんり</rt></ruby>じゃなくても、住みます。","町が<ruby>便利<rt>べんり</rt></ruby>じゃなくても、住みません。"],[1,2]],
+["体が元気","学校に行く",["元気でも、学校に行きます。","元気でも、学校に行きません。","元気じゃなくても、学校に行きます。","元気じゃなくても、学校に行きません。"],[1,2]],
+["明日が休み","早く起きる",["明日が休みでも、早く起きます。","明日が休みでも、早く起きません。","明日が休みじゃなくても、早く起きます。","明日が休みじゃなくても、早く起きません。"],[0,3]],
+["学生","<ruby>勉強<rt>べんきょう</rt></ruby>する",["学生でも、勉強します。","学生でも、勉強しません。","学生じゃなくても、勉強します。","学生じゃなくても、勉強しません。"],[1,2]],
+["日曜日","学校に行く",["日曜日でも、学校に行きます。","日曜日でも、学校に行きません。","日曜日じゃなくても、学校に行きます。","日曜日じゃなくても、学校に行きません。"],[0,3]]
+].map(x=>({k1:x[0],k2:x[1],choices:x[2],correct:x[3]}));
+
+let part=0,n=0,$=id=>document.getElementById(id);
+function startPart(p){part=p;n=0;$("home").classList.add("hidden");$("practice").classList.remove("hidden");render()}
+function goHome(){$("practice").classList.add("hidden");$("home").classList.remove("hidden")}
+function render(){
+ const arr=part===1?formQs:meaningQs,q=arr[n];$("progress").textContent=`Part ${part}　Question ${n+1} / ${arr.length}`;
+ if(part===1){$("content").innerHTML=`<div class="label">Make TWO forms: affirmative and negative.</div><div class="question"><strong>${q.base}</strong> →</div>
+ <input id="form1" type="text" placeholder="肯定：～ても"><div style="height:10px"></div><input id="form2" type="text" placeholder="否定：～なくても">`}
+ else{$("content").innerHTML=`<div class="label">① Keywords</div><div class="keywords">${q.k1}<span class="plus">＋</span>${q.k2}</div>
+ <div class="label">② Choose TWO correct sentences</div>${q.choices.map((x,i)=>`<label class="choice"><input type="checkbox" value="${i}">${x}</label>`).join("")}`}
+ $("feedback").className="feedback";$("feedback").innerHTML="";$("prev").disabled=n===0;$("next").disabled=n===arr.length-1;
+}
+function check(){
+ if(part===1){const q=formQs[n],a=$("form1").value.trim(),b=$("form2").value.trim(),o1=a===q.answers[0],o2=b===q.answers[1],ok=o1&&o2;
+ $("form1").style.borderColor=o1?"var(--greenline)":a?"var(--redline)":"var(--line)";$("form2").style.borderColor=o2?"var(--greenline)":b?"var(--redline)":"var(--line)";
+ $("feedback").innerHTML=`<div class="status">${ok?"✓ Correct!":"✗ Check again"}</div><div>${o1?"✓":"✗"} Affirmative: ${q.answers[0]}</div><div>${o2?"✓":"✗"} Negative: ${q.answers[1]}</div><div class="answer"><strong>${q.base} → ${q.answers[0]} / ${q.answers[1]}</strong></div>`;
+ $("feedback").className=ok?"feedback show good":"feedback show wrong"}
+ else{const q=meaningQs[n],sel=[...document.querySelectorAll('#content input:checked')].map(x=>+x.value).sort(),cor=[...q.correct].sort(),ok=sel.length===2&&sel.every((v,i)=>v===cor[i]);
+ document.querySelectorAll(".choice").forEach((lab,i)=>{if(q.correct.includes(i)){lab.style.background="var(--green)";lab.style.borderColor="var(--greenline)"}});
+ $("feedback").innerHTML=`<div class="status">${ok?"✓ Correct!":"✗ Check again"}</div><div>${sel.length!==2?"2つ選んでください。":ok?"2つとも正解です。":"正解は緑色の2文です。"}</div><div class="answer">① <strong>${q.choices[q.correct[0]]}</strong><br>② <strong>${q.choices[q.correct[1]]}</strong></div>`;
+ $("feedback").className=ok?"feedback show good":"feedback show wrong"}
+}
+$("check").onclick=check;$("reset").onclick=render;$("prev").onclick=()=>{if(n){n--;render()}};$("next").onclick=()=>{const a=part===1?formQs:meaningQs;if(n<a.length-1){n++;render()}};
+$("full").onclick=async()=>{try{document.fullscreenElement?await document.exitFullscreen():await document.documentElement.requestFullscreen()}catch(e){}};
+</script></body></html>
