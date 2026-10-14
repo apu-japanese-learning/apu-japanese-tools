@@ -863,7 +863,14 @@ body:not([data-kana-view="home"]) #kana-home{display:none!important}
  #vocabulary-list .vocab-yoon-large{font-size:calc(40px * var(--vocab-tile-scale,1))!important;transform:translate(calc(-5px * var(--vocab-tile-scale,1)),-50%)!important;}
  #vocabulary-list .vocab-yoon-small{font-size:calc(27.5px * var(--vocab-tile-scale,1))!important;bottom:calc(2px * var(--vocab-tile-scale,1))!important;transform:translate(calc(3.5px * var(--vocab-tile-scale,1)),calc(-3.5px * var(--vocab-tile-scale,1)))!important;}
 }
-</style></head><body data-kana-view="home"><main class="app"><section id="kana-home" class="kana-home">
+</style><style id="listen-answer-character-boxes">
+/* One square per selected kana; all squares shrink together for longer words. */
+#listening:not(.write-active) .listen-result-row #listen-answer{display:flex!important;align-items:center!important;justify-content:center!important;gap:2px!important;max-width:min(100%,280px)!important;min-width:0!important;width:auto!important;height:44px!important;min-height:44px!important;overflow:hidden!important;padding:0!important;white-space:nowrap!important;flex:0 1 auto!important;}
+#listening #listen-answer .answer-kana-box{display:flex;align-items:center;justify-content:center;flex:0 0 var(--answer-box-size,40px);width:var(--answer-box-size,40px);height:var(--answer-box-size,40px);border:1.5px solid #9eb9c8;border-radius:5px;background:#fff;color:#245f79;font-family:'Klee One',serif;font-size:calc(var(--answer-box-size,40px) * .72);font-weight:700;line-height:1;box-sizing:border-box;}
+#listening #listen-answer.is-correct .answer-kana-box{color:#176c46;border-color:#72aa8b;background:#f4fbf6;}
+@media(max-width:400px){#listening:not(.write-active) .listen-result-row #listen-answer{max-width:min(100%,180px)!important;height:35px!important;min-height:35px!important;}}
+</style>
+</head><body data-kana-view="home"><main class="app"><section id="kana-home" class="kana-home">
   <h1>Japanese Character Practice</h1>
   <p>Choose what you want to practice.</p>
   <div class="kana-home-options">
@@ -1608,4 +1615,37 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   },true);
   switchView('chart');
 })();
-</script></body></html>
+</script><script id="listen-answer-character-boxes-script">
+(function(){
+ const answer=document.getElementById('listen-answer');
+ const meaning=document.getElementById('listen-meaning');
+ if(!answer||!meaning)return;
+ let busy=false;
+ function render(){
+   if(busy || document.getElementById('listening').classList.contains('write-active'))return;
+   busy=true;
+   const target=Array.from(listenWords[listenIndex]||'');
+   const typed=Array.from(listenTyped||'');
+   const count=Math.max(target.length,typed.length);
+   const frag=document.createDocumentFragment();
+   for(let i=0;i<count;i++){
+     const box=document.createElement('span');
+     box.className='answer-kana-box';
+     box.textContent=typed[i]||'';
+     frag.appendChild(box);
+   }
+   answer.replaceChildren(frag);
+   const width=Math.min(window.innerWidth<=400?180:280,Math.max(100,window.innerWidth-90));
+   answer.style.setProperty('--answer-box-size',Math.max(12,Math.min(40,(width-Math.max(0,count-1)*2)/Math.max(1,count)))+'px');
+   busy=false;
+ }
+ const observer=new MutationObserver(render);
+ observer.observe(answer,{childList:true,characterData:true,subtree:true});
+ observer.observe(meaning,{childList:true,characterData:true,subtree:true});
+ document.getElementById('listen-easy').addEventListener('click',()=>queueMicrotask(render));
+ document.getElementById('listen-hard').addEventListener('click',()=>queueMicrotask(render));
+ window.addEventListener('resize',render);
+ render();
+})();
+</script>
+</body></html>
